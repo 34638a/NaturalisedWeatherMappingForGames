@@ -52,14 +52,16 @@ public class Cloud {
 					cloudshape[x][y] *= scaler;
 					cloudshape[x][y] = Math.round(cloudshape[x][y]);
 					cloudshape[x][y] += scaler;
-					cloudshape[x][y] *= (float) mask[x*size + y]/255.0f;
-					if ((float) mask[x*size + y]/255.0f != 0) {
-						//System.out.println("Masks" + (float) mask[x*size + y]/255.0f);
-					}
+					//cloudshape[x][y] *= (float) mask[x*size + y]/255.0f;
 				}
 			}
 			sf *= smoothingFactor;
 			ff *= featureFactor;
+		}
+		for (int x = 0; x < size; x++) {
+			for (int y = 0; y < size; y++) {
+				//cloudshape[x][y] *= (float) mask[x*size + y]/255.0f;
+			}
 		}
 	}
 

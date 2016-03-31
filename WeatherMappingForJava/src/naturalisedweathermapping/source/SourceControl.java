@@ -16,6 +16,30 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import naturalisedweathermapping.source.utils.Cloud;
+import naturalisedweathermapping.source.utils.WeatherUtils;
+
+/*
+ * The Plan.
+ * The whole system is governed by two 'map' types: The Weather Map and the Wind map
+ * The Wind map is a 'Map' that adjusts the temperature and controls the direction of travel that a cloud object moves.
+ * RGB Properties: R = wind direction X, B = Wind Direction Y, G = Temperature change.
+ * The Weather map is a 'Map' that holds cloud shapes, current effective temperatures at points and where rain is falling.
+ * RGB Properties: R = Land temperature level, B = Rain intensity, G = Cloud particles and appearance.
+ * A cloud is a object that is to be generated via a noise algorithm that results in an island shape.
+ * A cloud has the following properties:
+ * 		Moisture (Determines how much it's pixels should rain or if it should dissipate),
+ * 		TemperatureCurrent (The current temperature of the cloud),
+ * 		Tolerance (this is the threshold of heat that the cloud cannot rain at),
+ * 		FrostPoint (The point at which snow appears),
+ * 		LifeTime (How many map update frames the cloud should remain alive),
+ * 		Dissipating~Boolean (If the cloud is fading out).
+ * A WindShape is a shape that determines the way the wind moves on the wind map.
+ * A WindShape has the following properties:
+ * 		DEFINE PROPERTIES LATER WHEN THEY ARE BEING DEVELOPED.
+ * Every Weather update tick:
+ * 		All clouds move based on their current wind map point, change temperature based off the current temperature of the wind and , update their lifetime, change the weather map temperature and rain level
+ * 		All WindShapes (FINALISE WHEN WIND SHAPES ARE BEING MADE)
+ */
 
 public class SourceControl {
 	
@@ -24,6 +48,10 @@ public class SourceControl {
 	private static final int cloudsToGenerate = 5;
 	
 	public static void main(String[] args) throws IOException {
+		new WeatherUtils(1);
+	}
+	
+	public static void launch() throws IOException {
 		clouds = new ArrayList<Cloud>();
 		int cloudSize = 1024;
 		for (int i = 0; i < cloudsToGenerate; i++) {
@@ -39,9 +67,7 @@ public class SourceControl {
 					}
 					//System.out.println();
 				}
-				File outFile = new File("./Cloud_"+i+".png");
-				System.out.println("Writing out " + i);
-				ImageIO.write(im, "png", outFile);
+				WeatherUtils.writeOutImage(im, "Cloud_" + i);
 			}
 		}
 		/*
