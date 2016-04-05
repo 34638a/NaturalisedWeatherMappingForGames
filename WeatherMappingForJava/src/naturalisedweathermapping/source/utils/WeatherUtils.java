@@ -10,103 +10,77 @@ import javax.imageio.ImageIO;
 
 public class WeatherUtils {
 	
-	static int mapSize = 1;
-	static float[] noiseMap;
-	static float[] cloudMap;
-	static float[] mask;
+	private static int mapSize = 1;
+	private static int noiseSize = 1;
+	private static double[][] noise;
 	
-	public WeatherUtils(int mapSize) {
-		WeatherUtils.mapSize = mapSize;
-		mask = new float[256 * 256 * mapSize];
-		//r^2 = x^2 + y^2
-		for (int x = 0; x < 256 * mapSize; x++) {
-			for (int y = 0; y < 256 * mapSize; y++) {
-				mask[x * 256 + y] = (float) (Math.sin(x)*Math.sin(y));
-				System.out.print(mask[x * 256 + y] + ", ");
-				//Math.sin((2 * Math.pi())/B)
+	public static double[][] generateNoised2(int size, int smoothness) {
+		noiseSize = size;
+		double[][] retNoise = new double[size][size];
+		noise = new double[size][size];
+		generateRandomNoise();
+		for (int x = 0; x < noise.length; x++) {
+			for (int y = 0; y < noise[x].length; y++) {
+				retNoise[x][y] = Math.round((float) turbulence(x, y, smoothness));
 			}
-			System.out.println();
 		}
-		writeOutImage(mask);
+		return retNoise;
 	}
-	public static void generateNoiseMap() {
-		noiseMap = new float[32 * 32* mapSize];
-		cloudMap = new float[256 * 256 * mapSize];
+	public static float[][] generateNoisef2(int size, int smoothness) {
+		float[][] temp = new float[size][size];
+		double[][] tNoise = generateNoised2(size, smoothness);
+		for (int x = 0; x < size; x++) {
+			for (int y = 0; y < size; y++) {
+				temp[x][y] = (float) tNoise[x][y];
+			}
+		}
+		return temp;
 	}
 	
-	public static float createSeededNoise(int x, int y, int seed) {
-		int n = x + y * 57 + seed * 131;
-		
-		n = (n << 13) ^ n;
-		return (1.0f - ((n * (n * n * 15731 + 789221) + 1276312589)&0x7fffffff) * 0.000000000931322574615478515625f);
-	}
-	
-	public static void setNoiseToTempMap() {
-		float[][] tempMap = new float[34][34];
+	private static void generateRandomNoise() {
 		Random rnd = new Random();
-		int seed = rnd.nextInt();
-		
-		for (int y = 1; y < 33; y++) {
-			for (int x = 1; x < 33; x++) {
-				tempMap[x][y] = 128.0f + createSeededNoise(x, y,  seed)*128.0f;
-			}
-		}
-		
-		for (int x = 1; x < 33; x++) {
-			tempMap[0][x] = tempMap[32][x];
-			tempMap[33][x] = tempMap[1][x];
-			tempMap[x][0] = tempMap[x][32];
-			tempMap[x][33] = tempMap[x][1];
-		}
-		tempMap[0][0] = tempMap[32][32];
-		tempMap[33][33] = tempMap[1][1];
-		tempMap[0][33] = tempMap[32][1];
-		tempMap[33][0] = tempMap[1][32];
-		
-		
-		for (int y = 1; y < 33; y++) {
-			for (int x = 1; x < 33; x++) {
-				float center = tempMap[x][y]/4.0f;
-
-				float sides = (tempMap[x+1][y] + tempMap[x-1][y] + tempMap[x][y+1] + tempMap[x][y-1])/8.0f;
-
-				float corners = (tempMap[x+1][y+1] + tempMap[x+1][y-1] + tempMap[x-1][y+1] + tempMap[x-1][y-1])/16.0f;
-				noiseMap[((x-1)*32) + (y-1)] = center + sides + corners;
+		for (int x = 0; x < noise.length; x++) {
+			for (int y = 0; y < noise[x].length; y++) {
+				noise[x][y] = (double) ((rnd.nextInt(32768) % 32768) / 32768.0);
 			}
 		}
 	}
 	
-	public static float smoothMap(float x, float y, float[] map) {
-		int X = (int) x;
-		int Y = (int) y;
+	private static double smoothNoiseMap(double x, double y) {
 		
-		float xFract = x - X;
-		float yFract = y - Y;
+		int rX = (int) x; //Math.round((float) x);
+		int rY = (int) y; //Math.round((float) y);
+		//int rX = Math.round((float) x);
+		//int rY = Math.round((float) y);
+		//if (rX < 0 || rY < 0) {
+		//	System.out.println(rX + ", " + rY);
+		//}
 		
-		int X0 = X % 32;
-		int Y0 = Y % 32;
-		int X1 = (X + 1) % 32;
-		int Y1 = (Y + 1) % 32;
+		double fractX = x - rX;
+		double fractY = y - rY;
 		
-		float bot = map[X0*32 + Y0] + xFract * (map[X1*32 + Y0] - map[X0*32 + Y0]);
-		float top = map[X0*32 + Y1] + xFract * (map[X1*32 +  Y1] - map[X0*32 + Y1]);
+		int x1 = (rX + noiseSize - 1) % noiseSize;
+		int y1 = (rY + noiseSize - 1) % noiseSize;
+		int x2 = (x1 + noiseSize - 1) % noiseSize;
+		int y2 = (y1 + noiseSize - 1) % noiseSize;
 		
-		return (bot + yFract * (top - bot));
+		double value = 0.0;
+		value += fractX     * fractY     * noise[y1][x1];
+		value += (1 - fractX) * fractY     * noise[y1][x2];
+		value += fractX     * (1 - fractY) * noise[y2][x1];
+		value += (1 - fractX) * (1 - fractY) * noise[y2][x2];
+		//value = noise[rX][rY];
+		
+		return value;
 	}
 	
-	public static void OverlapOctaves(float[] mapSmall, float[] cloudMap, int maps) {
-		for (int x = 0; x < cloudMap.length*cloudMap.length; x++) {
-			cloudMap[x] = 0;
+	private static double turbulence(double x, double y, double size) {
+		double value = 0.0, initialSize = size;
+		while (size >= 1) {
+			value += smoothNoiseMap(x / size, y / size) * size;
+			size /= 2.0;
 		}
-		for (int octave = 0; octave < maps; octave++) {
-			for (int x = 0; x < cloudMap.length; x++) {
-				for (int y = 0; y < cloudMap.length; y++) {
-					float scale = (float) (1 / Math.pow(2, 3-octave));
-					float noise = smoothMap(x*scale, y*scale , mapSmall);
-					cloudMap[(y*256) + x] += (float) (noise / Math.pow(2, octave));
-				}
-			}
-		}
+		return (128.0 * value / initialSize);
 	}
 	
 	public static void expFilterMap(float[] cloudMap) {

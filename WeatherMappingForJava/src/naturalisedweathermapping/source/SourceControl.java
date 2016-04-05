@@ -1,19 +1,10 @@
 package naturalisedweathermapping.source;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RadialGradientPaint;
-import java.awt.RenderingHints;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 import naturalisedweathermapping.source.utils.Cloud;
 import naturalisedweathermapping.source.utils.WeatherUtils;
@@ -48,21 +39,24 @@ public class SourceControl {
 	private static final int cloudsToGenerate = 5;
 	
 	public static void main(String[] args) throws IOException {
-		new WeatherUtils(1);
+		//TEMP temp = new TEMP();
+		//temp.generateNoise();
+		//new WeatherUtils(1);
+		launch();
 	}
 	
 	public static void launch() throws IOException {
 		clouds = new ArrayList<Cloud>();
 		int cloudSize = 1024;
 		for (int i = 0; i < cloudsToGenerate; i++) {
-			Cloud c = new Cloud(cloudSize, 10f, 0.1f, 1);
+			Cloud c = new Cloud(cloudSize, 128);
 			clouds.add(c);
 			if (outputCloudsToImages) {
 				BufferedImage im = new BufferedImage(cloudSize, cloudSize, BufferedImage.TYPE_INT_RGB);
 				int[] raster = ((DataBufferInt) im.getRaster().getDataBuffer()).getData();
 				for (int x = 0; x < cloudSize; x++) {
 					for (int y = 0; y < cloudSize; y++) {
-						raster[x*cloudSize + y] = getIntFromColor(c.getCloudshape()[x][y],c.getCloudshape()[x][y],c.getCloudshape()[x][y]);
+						raster[x*cloudSize + y] = getIntFromColor(c.getCloudshapef2()[x][y],c.getCloudshapef2()[x][y],c.getCloudshapef2()[x][y]);
 						//System.out.print(c.getCloudshape()[x][y] + ", ");
 					}
 					//System.out.println();
