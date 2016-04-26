@@ -1,4 +1,4 @@
-package naturalisedweathermapping.source;
+package com.gamingutils.source;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import naturalisedweathermapping.source.utils.Cloud;
-import naturalisedweathermapping.source.utils.WeatherUtils;
+import com.gamingutils.source.utils.Cloud;
+import com.gamingutils.source.utils.WeatherUtils;
 
 /*
  * The Plan.

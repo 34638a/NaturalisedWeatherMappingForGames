@@ -1,4 +1,4 @@
-package naturalisedweathermapping.source.utils;
+package com.gamingutils.source.utils;
 
 public class Cloud {
 	
@@ -9,6 +9,7 @@ public class Cloud {
 	
 	public Cloud(int size, int smoothness) {
 		cloudshape = WeatherUtils.generateNoisef2(size, smoothness);
+		WeatherUtils.maskCircular(cloudshape);
 	}
 
 	public float[][] getCloudshapef2() {

@@ -1,4 +1,4 @@
-package naturalisedweathermapping.source.utils;
+package com.gamingutils.source.utils;
 
 public class CloudProperties {
 	

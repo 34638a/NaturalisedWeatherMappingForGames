@@ -1,4 +1,4 @@
-package naturalisedweathermapping.source.utils;
+package com.gamingutils.source.utils;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -93,6 +93,36 @@ public class WeatherUtils {
 			}
 			cloudMap[x] = 255.0f - ((float) (Math.pow(sharpness, c))*255.0f);
 		}
+	}
+	
+	static boolean maskOut = false;
+	
+	public static void maskCircular(float[][] noiseToMask) {
+		for (int x1 = 0; x1 < noiseToMask.length; x1++) {
+			for (int y1 = 0; y1 < noiseToMask[x1].length; y1++) {
+				float distance_x = Math.abs(x1 - noiseToMask.length * 0.5f);
+				float distance_y = Math.abs(y1 - noiseToMask.length * 0.5f);
+				float distance = (float) Math.sqrt(distance_x*distance_x + distance_y*distance_y); // circular mask
+
+				float max_width = noiseToMask.length * 0.5f - 10.0f;
+				float delta = 1.0f;
+				if (distance <= max_width) {
+					delta = distance / max_width;
+				}
+				float gradient = delta * delta;
+				if (maskOut) {
+					System.out.print(Math.abs(1 - gradient) + ", ");
+				}
+				noiseToMask[x1][y1] *= fClamp(0.0f, 1.0f, (Math.abs(1-delta)));
+			}
+			if (maskOut) {
+				System.out.println();
+			}
+		}
+	}
+	
+	public static float fClamp(float min, float max, float value) {
+		return Math.max(min, Math.min(max, value));
 	}
 	
 	public static void writeOutImage(float[] array) {
